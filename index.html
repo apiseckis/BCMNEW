@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Heart Toggle</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+  <button id="heart"><span class="material-icons">favorite_border</span></button>
+
+  <script>
+    const btn = document.getElementById('heart');
+    const dateKey = new Date().toLocaleDateString();
+    function render(){
+      const state = localStorage.getItem(dateKey) === 'True';
+      btn.firstElementChild.textContent = state ? 'favorite' : 'favorite_border';
+    }
+    btn.addEventListener('click', () => {
+      const current = localStorage.getItem(dateKey) === 'True';
+      localStorage.setItem(dateKey, current ? 'False' : 'True');
+      render();
+    });
+    render();
+  </script>
+</body>
+</html>

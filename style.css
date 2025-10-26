@@ -1,0 +1,25 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f8f9fa;
+}
+
+button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;           /* remove default padding */
+}
+
+button .material-icons {
+    font-size: 20vw;      /* big, responsive */
+    color: #e91e63;       /* pink heart */
+    transition: transform 0.2s;
+}
+
+button:active .material-icons {
+    transform: scale(0.9); /* tap animation */
+}
