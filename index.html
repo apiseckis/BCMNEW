@@ -17,89 +17,125 @@
   <div id="monthTitle"></div>
   <div id="calendar"></div>
 
-  <script>
-    const btn = document.getElementById('heart');
-    const calendar = document.getElementById("calendar");
-    const monthTitle = document.getElementById("monthTitle");
+<script>
+  const btn = document.getElementById('heart');
+  const calendar = document.getElementById("calendar");
+  const monthTitle = document.getElementById("monthTitle");
 
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const today = now.getDate();
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const today = now.getDate();
 
-    const lastDay = new Date(year, month + 1, 0);
-    const monthName = now.toLocaleString('default', { month: 'long' });
-    monthTitle.textContent = `${monthName} ${year}`;
+  const monthName = now.toLocaleString('default', { month: 'long' });
+  monthTitle.textContent = `${monthName} ${year}`;
 
-    let selectedDate = new Date(year, month, today);
+  let selectedDate = new Date(year, month, today);
 
-    function dateKey(date) {
-      return date.toLocaleDateString();
-    }
+  function dateKey(date) {
+    return date.toLocaleDateString();
+  }
 
-    function renderHeart() {
-      const state = localStorage.getItem(dateKey(selectedDate)) === 'True';
-      btn.firstElementChild.textContent = state ? 'favorite' : 'favorite_border';
-    }
+  function renderHeart() {
+    const state = localStorage.getItem(dateKey(selectedDate)) === 'True';
+    btn.firstElementChild.textContent = state ? 'favorite' : 'favorite_border';
+  }
 
-    btn.addEventListener('click', () => {
-      const key = dateKey(selectedDate);
-      const current = localStorage.getItem(key) === 'True';
-      localStorage.setItem(key, current ? 'False' : 'True');
-      renderHeart();
-      renderCalendar();
+  btn.addEventListener('click', () => {
+    const key = dateKey(selectedDate);
+    const current = localStorage.getItem(key) === 'True';
+    localStorage.setItem(key, current ? 'False' : 'True');
+    renderHeart();
+    renderCalendar();
+  });
+
+  function renderCalendar() {
+    calendar.innerHTML = '';
+
+    // --- Add weekday headers ---
+    const daysOfWeek = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    daysOfWeek.forEach(d => {
+      const header = document.createElement("div");
+      header.textContent = d;
+      header.classList.add("day-header");
+      calendar.appendChild(header);
     });
 
-    function renderCalendar() {
-      calendar.innerHTML = '';
+    // --- Calculate first day offset ---
+    const firstDay = new Date(year, month, 1);
+    // getDay() gives 0=Sun, so convert to 1=Mon ... 7=Sun
+    let startIndex = firstDay.getDay();
+    if (startIndex === 0) startIndex = 7;
 
-      for (let day = 1; day <= lastDay.getDate(); day++) {
-        const cell = document.createElement("div");
-        cell.classList.add("day");
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const daysInPrevMonth = new Date(year, month, 0).getDate();
 
-        const thisDate = new Date(year, month, day);
-        const key = dateKey(thisDate);
-        const isTrue = localStorage.getItem(key) === 'True';
+    // --- Days from previous month ---
+    for (let i = startIndex - 1; i > 0; i--) {
+      const cell = document.createElement("div");
+      cell.classList.add("day", "other-month");
+      cell.textContent = daysInPrevMonth - i + 1;
+      calendar.appendChild(cell);
+    }
 
-        // day number
-        const num = document.createElement("span");
-        num.textContent = day;
-        cell.appendChild(num);
+    // --- Days of current month ---
+    for (let day = 1; day <= daysInMonth; day++) {
+      const cell = document.createElement("div");
+      cell.classList.add("day");
 
-        // small heart if true
-        if (isTrue) {
-          const icon = document.createElement("span");
-          icon.classList.add("material-icons", "small-heart");
-          icon.textContent = "favorite";
-          cell.appendChild(icon);
-        }
+      const thisDate = new Date(year, month, day);
+      const key = dateKey(thisDate);
+      const isTrue = localStorage.getItem(key) === 'True';
 
-        // highlight today
-        if (day === today) cell.classList.add("today");
+      const num = document.createElement("span");
+      num.textContent = day;
+      cell.appendChild(num);
 
-        // click handler
-        cell.addEventListener("click", () => {
-          selectedDate = thisDate;
-          updateSelection();
-          renderHeart();
-        });
-
-        calendar.appendChild(cell);
+      if (isTrue) {
+        const icon = document.createElement("span");
+        icon.classList.add("material-icons", "small-heart");
+        icon.textContent = "favorite";
+        cell.appendChild(icon);
       }
 
-      updateSelection();
+      if (day === today) cell.classList.add("today");
+
+      cell.addEventListener("click", () => {
+        selectedDate = thisDate;
+        updateSelection();
+        renderHeart();
+      });
+
+      calendar.appendChild(cell);
     }
 
-    function updateSelection() {
-      document.querySelectorAll(".day").forEach(d => d.classList.remove("selected"));
-      const days = document.querySelectorAll(".day");
-      const index = selectedDate.getDate() - 1;
-      const selectedCell = calendar.children[index];
-      if (selectedCell) selectedCell.classList.add("selected");
+    // --- Fill remaining days of the last week (next month days) ---
+    const totalCells = calendar.children.length;
+    const remainder = totalCells % 7;
+    if (remainder !== 0) {
+      const nextDays = 7 - remainder;
+      for (let i = 1; i <= nextDays; i++) {
+        const cell = document.createElement("div");
+        cell.classList.add("day", "other-month");
+        cell.textContent = i;
+        calendar.appendChild(cell);
+      }
     }
 
-    renderCalendar();
-    renderHeart();
-  </script>
+    updateSelection();
+  }
+
+  function updateSelection() {
+    document.querySelectorAll(".day").forEach(d => d.classList.remove("selected"));
+    const days = [...calendar.querySelectorAll(".day:not(.other-month)")];
+    const index = selectedDate.getDate() - 1;
+    const selectedCell = days[index];
+    if (selectedCell) selectedCell.classList.add("selected");
+  }
+
+  renderCalendar();
+  renderHeart();
+</script>
+
 </body>
 </html>
